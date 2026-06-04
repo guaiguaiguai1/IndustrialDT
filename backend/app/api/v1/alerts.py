@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -86,7 +86,7 @@ async def alert_trend(db: Session = Depends(get_db)):
 
     result = []
     for i in range(6, -1, -1):
-        day = datetime.utcnow().date() - timedelta(days=i)
+        day = datetime.now(timezone.utc).date() - timedelta(days=i)
         start = datetime.combine(day, datetime.min.time())
         end = datetime.combine(day, datetime.max.time())
         count = (
@@ -104,6 +104,6 @@ async def resolve_alert(alert_id: int, db: Session = Depends(get_db)):
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     alert.resolved = True
-    alert.resolved_at = datetime.utcnow()
+    alert.resolved_at = datetime.now(timezone.utc)
     db.commit()
     return {"message": "Alert resolved", "id": alert_id}

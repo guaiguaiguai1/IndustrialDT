@@ -54,7 +54,7 @@ async def energy_analysis(db: Session = Depends(get_db)):
     """Energy consumption analysis for the last 30 days."""
     result = []
     for i in range(29, -1, -1):
-        day = datetime.utcnow().date() - timedelta(days=i)
+        day = datetime.now(timezone.utc).date() - timedelta(days=i)
         start = datetime.combine(day, datetime.min.time())
         end = datetime.combine(day, datetime.max.time())
         records = (
@@ -119,7 +119,7 @@ async def oee_breakdown(db: Session = Depends(get_db)):
     """Detailed OEE breakdown with loss categories."""
     result = []
     for i in range(29, -1, -1):
-        day = datetime.utcnow().date() - timedelta(days=i)
+        day = datetime.now(timezone.utc).date() - timedelta(days=i)
         availability = round(85 + random.uniform(0, 14), 1)
         performance = round(80 + random.uniform(0, 15), 1)
         quality = round(92 + random.uniform(0, 7), 1)

@@ -128,6 +128,6 @@ async def update_maintenance_status(
         raise HTTPException(status_code=404, detail="Maintenance record not found")
     record.status = status
     if status == "completed":
-        record.end_time = datetime.utcnow()
+        record.end_time = datetime.now(timezone.utc)
     db.commit()
     return {"message": "Maintenance record updated", "id": record_id}

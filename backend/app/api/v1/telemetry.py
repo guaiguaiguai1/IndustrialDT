@@ -34,7 +34,7 @@ async def get_device_telemetry(
     hours: int = Query(24, description="Number of hours of data"),
     db: Session = Depends(get_db),
 ):
-    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     return (
         db.query(TelemetryData)
         .filter(TelemetryData.device_id == device_id, TelemetryData.timestamp >= cutoff)
@@ -67,7 +67,7 @@ async def get_latest_telemetry(device_id: int, db: Session = Depends(get_db)):
 async def simulate_telemetry(db: Session = Depends(get_db)):
     """Generate simulated real-time telemetry for all devices."""
     devices = db.query(Device).all()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     new_records = []
 
     for device in devices:

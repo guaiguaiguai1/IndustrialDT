@@ -71,7 +71,7 @@ async def oee_trend():
 
     result = []
     for i in range(29, -1, -1):
-        day = datetime.utcnow().date() - timedelta(days=i)
+        day = datetime.now(timezone.utc).date() - timedelta(days=i)
         availability = round(85 + random.uniform(0, 14), 1)
         performance = round(80 + random.uniform(0, 15), 1)
         quality = round(92 + random.uniform(0, 7), 1)

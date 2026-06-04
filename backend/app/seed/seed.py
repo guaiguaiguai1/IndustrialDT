@@ -90,7 +90,7 @@ def seed_database():
             status=d["status"],
             health_score=d["health_score"],
             installation_date=base_date + timedelta(days=random.randint(0, 365)),
-            last_maintenance=datetime.utcnow() - timedelta(days=random.randint(1, 60)),
+            last_maintenance=datetime.now(timezone.utc) - timedelta(days=random.randint(1, 60)),
         )
         devices.append(device)
     db.add_all(devices)
@@ -101,7 +101,7 @@ def seed_database():
 
     # --- Telemetry Data (30 days of hourly data) ---
     print("  Generating telemetry data (this may take a moment)...")
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     telemetry_records = []
 
     for device in devices:
@@ -181,7 +181,7 @@ def seed_database():
         device = random.choice(devices)
         days_ago = random.randint(0, 14)
         hours_ago = random.randint(0, 23)
-        created = datetime.utcnow() - timedelta(days=days_ago, hours=hours_ago)
+        created = datetime.now(timezone.utc) - timedelta(days=days_ago, hours=hours_ago)
 
         resolved = random.random() < 0.5
         resolved_at = created + timedelta(hours=random.randint(1, 24)) if resolved else None
@@ -211,7 +211,7 @@ def seed_database():
     for device in devices:
         # Past completed maintenance
         for _ in range(random.randint(0, 2)):
-            start = datetime.utcnow() - timedelta(days=random.randint(10, 90))
+            start = datetime.now(timezone.utc) - timedelta(days=random.randint(10, 90))
             duration = timedelta(hours=random.randint(2, 12))
             maintenance_records.append(
                 MaintenanceRecord(
@@ -236,7 +236,7 @@ def seed_database():
 
     # Future scheduled maintenance
     for device in random.sample(devices, 8):
-        future_start = datetime.utcnow() + timedelta(days=random.randint(1, 30))
+        future_start = datetime.now(timezone.utc) + timedelta(days=random.randint(1, 30))
         maintenance_records.append(
             MaintenanceRecord(
                 device_id=device.id,
