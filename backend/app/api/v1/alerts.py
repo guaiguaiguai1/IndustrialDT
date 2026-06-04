@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func as sqlfunc
 from pydantic import BaseModel
 
@@ -35,7 +35,7 @@ async def list_alerts(
     resolved: Optional[bool] = Query(None),
     db: Session = Depends(get_db),
 ):
-    query = db.query(Alert)
+    query = db.query(Alert).options(joinedload(Alert.device))
     if severity:
         query = query.filter(Alert.severity == severity)
     if device_id:
@@ -46,11 +46,10 @@ async def list_alerts(
 
     result = []
     for alert in alerts:
-        device = db.query(Device).filter(Device.id == alert.device_id).first()
         alert_dict = AlertResponse(
             id=alert.id,
             device_id=alert.device_id,
-            device_name=device.name if device else None,
+            device_name=alert.device.name if alert.device else None,
             type=alert.type,
             severity=alert.severity,
             message=alert.message,

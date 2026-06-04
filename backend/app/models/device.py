@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
@@ -18,3 +19,7 @@ class Device(Base):
     last_maintenance = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    alerts = relationship("Alert", back_populates="device")
+    maintenance_records = relationship("MaintenanceRecord", back_populates="device")
