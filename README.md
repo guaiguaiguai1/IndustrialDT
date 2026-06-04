@@ -9,53 +9,53 @@
 ![Three.js](https://img.shields.io/badge/Three.js-3D-049EF4?logo=three.js&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-**IoT-powered digital twin platform for manufacturing equipment monitoring, 3D visualization, predictive maintenance, and OEE analysis.**
+工业数字孪生平台 - 基于IoT的设备监控、3D可视化、预测性维护和OEE分析系统。
 
 </div>
 
 ---
 
-## Features
+## 功能特性
 
-- **Real-time Equipment Monitoring** - Track 16+ industrial devices across 3 workshops with live telemetry data
-- **3D Workshop Visualization** - Interactive Three.js-powered 3D view with color-coded device status and click-to-inspect
-- **Predictive Maintenance** - MTBF/MTTR analysis and maintenance scheduling with calendar view
-- **OEE Analytics** - Overall Equipment Effectiveness breakdown (Availability x Performance x Quality)
-- **Alert Management** - Real-time alert center with severity classification and resolution workflow
-- **Energy Analysis** - Power consumption trends and optimization insights
-- **Device Management** - Complete device lifecycle with telemetry history and health scoring
+- **实时设备监控** - 覆盖3个车间16+台工业设备，实时遥测数据
+- **3D车间可视化** - Three.js驱动的交互式3D视图，设备状态颜色编码，点击查看详细信息
+- **预测性维护** - MTBF/MTTR分析，维护日历排程
+- **OEE分析** - 设备综合效率分解（可用率 × 性能率 × 质量率）
+- **告警管理** - 实时告警中心，严重级别分类，处理流程闭环
+- **能耗分析** - 用电趋势和优化建议
+- **设备管理** - 设备全生命周期，遥测历史和健康评分
 
-## Tech Stack
+## 技术栈
 
-### Backend
-| Technology | Purpose |
+### 后端
+| 技术 | 用途 |
 |---|---|
-| **Python 3.11+** | Runtime |
-| **FastAPI** | REST API framework |
-| **SQLAlchemy** | ORM and database toolkit |
-| **SQLite** | Database |
-| **Pydantic** | Data validation |
-| **JWT (python-jose)** | Authentication |
+| **Python 3.11+** | 运行时 |
+| **FastAPI** | REST API框架 |
+| **SQLAlchemy** | ORM |
+| **SQLite** | 数据库 |
+| **Pydantic** | 数据验证 |
+| **JWT (python-jose)** | 认证 |
 
-### Frontend
-| Technology | Purpose |
+### 前端
+| 技术 | 用途 |
 |---|---|
-| **React 18** | UI framework |
-| **TypeScript** | Type safety |
-| **Vite** | Build tool |
-| **Ant Design** | UI component library |
-| **ECharts** | Data visualization |
-| **Three.js / React Three Fiber** | 3D visualization |
-| **Zustand** | State management |
-| **React Router** | Client-side routing |
+| **React 18** | UI框架 |
+| **TypeScript** | 类型安全 |
+| **Vite** | 构建工具 |
+| **Ant Design** | UI组件库 |
+| **ECharts** | 数据可视化 |
+| **Three.js / React Three Fiber** | 3D可视化 |
+| **Zustand** | 状态管理 |
+| **React Router** | 路由 |
 
-## Architecture
+## 系统架构
 
 ```
 +-----------------------------------------------------+
-|                   Frontend (React)                   |
+|                   前端 (React)                       |
 |  +----------+  +--------+  +--------+  +---------+  |
-|  | Dashboard |  | 3D View|  | Alerts |  |Analytics|  |
+|  | 仪表盘   |  | 3D视图 |  | 告警   |  | 分析    |  |
 |  +----------+  +--------+  +--------+  +---------+  |
 |       |             |           |            |        |
 |  +----------------------------------------------+   |
@@ -66,104 +66,104 @@
                     REST API (HTTP)
                          |
 +-----------------------------------------------------+
-|                  Backend (FastAPI)                    |
+|                  后端 (FastAPI)                       |
 |  +----------+  +--------+  +--------+  +---------+  |
-|  | Auth API |  |Devices |  |Telemetry|  |Dashboard|  |
+|  | 认证API  |  | 设备   |  | 遥测   |  | 仪表盘  |  |
 |  +----------+  +--------+  +--------+  +---------+  |
 |  +----------+  +--------+  +--------+               |
-|  | Alerts   |  |Maint.  |  |Analytics|               |
+|  | 告警     |  | 维护   |  | 分析   |               |
 |  +----------+  +--------+  +--------+               |
 +-----------------------------------------------------+
                          |
                   SQLAlchemy ORM
                          |
 +-----------------------------------------------------+
-|                    SQLite Database                    |
+|                    SQLite 数据库                      |
 |  devices | telemetry_data | alerts | maintenance     |
 |  users                                              |
 +-----------------------------------------------------+
 ```
 
-## Quick Start
+## 快速开始
 
-### Prerequisites
+### 环境要求
 - Python 3.11+
 - Node.js 18+
-- npm or yarn
+- npm 或 yarn
 
-### Backend Setup
+### 后端启动
 
 ```bash
 cd backend
 
-# Create virtual environment
+# 创建虚拟环境
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install dependencies
+# 安装依赖
 pip install -r requirements.txt
 
-# Start the server (auto-seeds database on first run)
+# 启动服务（首次运行自动初始化数据库）
 uvicorn app.main:app --reload --port 8000
 ```
 
-The API will be available at `http://localhost:8000`
-API docs at `http://localhost:8000/docs`
+API地址: `http://localhost:8000`
+API文档: `http://localhost:8000/docs`
 
-### Frontend Setup
+### 前端启动
 
 ```bash
 cd frontend
 
-# Install dependencies
+# 安装依赖
 npm install
 
-# Start development server
+# 启动开发服务器
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+访问地址: `http://localhost:5173`
 
-### Default Login
-| Username | Password | Role |
+### 默认账号
+| 用户名 | 密码 | 角色 |
 |---|---|---|
-| admin | admin123 | Admin |
-| engineer | engineer123 | Engineer |
-| operator | operator123 | Operator |
+| admin | admin123 | 管理员 |
+| engineer | engineer123 | 工程师 |
+| operator | operator123 | 操作员 |
 
-### Docker Setup
+### Docker部署
 
 ```bash
 docker-compose up --build
 ```
 
-- Frontend: `http://localhost`
-- Backend API: `http://localhost:8000`
+- 前端: `http://localhost`
+- 后端API: `http://localhost:8000`
 
-## Screenshots
+## 页面说明
 
-### Dashboard
-Main monitoring dashboard with KPI cards, OEE gauge, status distribution pie chart, alert trend line chart, and device status table.
+### 仪表盘
+主监控面板，包含KPI卡片、OEE仪表盘、状态分布饼图、告警趋势折线图和设备状态表格。
 
-### 3D Workshop View
-Interactive 3D visualization showing 16 devices across 3 workshops. Color-coded by status (green=normal, yellow=warning, red=fault, gray=offline). Click any device to view real-time telemetry in an info panel. Supports orbit controls for camera rotation.
+### 3D车间视图
+交互式3D可视化，展示3个车间的16台设备。颜色代表状态（绿色=正常，黄色=告警，红色=故障，灰色=离线）。点击设备可查看实时遥测数据面板。支持轨道控制旋转视角。
 
-### Device Management
-Device list with filtering by workshop, status, and type. Click to view detailed telemetry charts (temperature, vibration over 48 hours).
+### 设备管理
+设备列表，支持按车间、状态、类型筛选。点击可查看详细遥测图表（温度、振动，48小时数据）。
 
-### Alert Center
-Alert management with severity badges (critical/warning/info), filtering, and one-click resolution. Statistics cards show alert distribution.
+### 告警中心
+告警管理，包含严重级别标签（严重/告警/信息），筛选和一键处理功能。统计卡片展示告警分布。
 
-### Analytics & Reports
-OEE breakdown trends, MTBF/MTTR reliability statistics, energy consumption analysis, and device performance comparison radar charts.
+### 分析报表
+OEE趋势分解、MTBF/MTTR可靠性统计、能耗分析、设备性能对比雷达图。
 
-## Project Structure
+## 项目结构
 
 ```
 IndustrialDT/
 ├── backend/
 │   ├── app/
-│   │   ├── api/v1/          # API endpoints
+│   │   ├── api/v1/          # API接口
 │   │   │   ├── auth.py
 │   │   │   ├── devices.py
 │   │   │   ├── telemetry.py
@@ -171,17 +171,17 @@ IndustrialDT/
 │   │   │   ├── maintenance.py
 │   │   │   ├── dashboard.py
 │   │   │   └── analytics.py
-│   │   ├── core/            # Configuration
+│   │   ├── core/            # 配置
 │   │   │   ├── config.py
 │   │   │   ├── database.py
 │   │   │   └── security.py
-│   │   ├── models/          # SQLAlchemy models
+│   │   ├── models/          # SQLAlchemy模型
 │   │   │   ├── device.py
 │   │   │   ├── telemetry.py
 │   │   │   ├── alert.py
 │   │   │   ├── maintenance.py
 │   │   │   └── user.py
-│   │   ├── seed/            # Data seeding
+│   │   ├── seed/            # 数据初始化
 │   │   │   └── seed.py
 │   │   └── main.py
 │   ├── requirements.txt
@@ -211,39 +211,40 @@ IndustrialDT/
 └── .gitignore
 ```
 
-## API Endpoints
+## API接口
 
-| Method | Endpoint | Description |
+| 方法 | 接口 | 说明 |
 |---|---|---|
-| POST | `/api/v1/auth/login` | User authentication |
-| GET | `/api/v1/auth/me` | Current user info |
-| GET | `/api/v1/devices/` | List all devices |
-| GET | `/api/v1/devices/stats` | Device statistics |
-| GET | `/api/v1/devices/workshops` | List workshops |
-| GET | `/api/v1/telemetry/{id}` | Device telemetry data |
-| GET | `/api/v1/telemetry/realtime/all` | Real-time all devices |
-| POST | `/api/v1/telemetry/simulate` | Generate simulated data |
-| GET | `/api/v1/alerts/` | List alerts |
-| GET | `/api/v1/alerts/stats` | Alert statistics |
-| PUT | `/api/v1/alerts/{id}/resolve` | Resolve alert |
-| GET | `/api/v1/maintenance/` | List maintenance records |
-| GET | `/api/v1/maintenance/calendar` | Calendar events |
-| GET | `/api/v1/dashboard/overview` | Dashboard KPIs |
-| GET | `/api/v1/dashboard/oee` | OEE statistics |
-| GET | `/api/v1/analytics/mtbf-mttr` | Reliability stats |
-| GET | `/api/v1/analytics/energy` | Energy analysis |
-| GET | `/api/v1/analytics/device-comparison` | Device comparison |
+| POST | `/api/v1/auth/login` | 用户登录 |
+| GET | `/api/v1/auth/me` | 当前用户信息 |
+| GET | `/api/v1/devices/` | 设备列表 |
+| GET | `/api/v1/devices/stats` | 设备统计 |
+| GET | `/api/v1/devices/workshops` | 车间列表 |
+| GET | `/api/v1/telemetry/{id}` | 设备遥测数据 |
+| GET | `/api/v1/telemetry/realtime/all` | 所有设备实时数据 |
+| POST | `/api/v1/telemetry/simulate` | 生成模拟数据 |
+| GET | `/api/v1/alerts/` | 告警列表 |
+| GET | `/api/v1/alerts/stats` | 告警统计 |
+| PUT | `/api/v1/alerts/{id}/resolve` | 处理告警 |
+| GET | `/api/v1/maintenance/` | 维护记录 |
+| GET | `/api/v1/maintenance/calendar` | 维护日历 |
+| GET | `/api/v1/dashboard/overview` | 仪表盘概览 |
+| GET | `/api/v1/dashboard/oee` | OEE统计 |
+| GET | `/api/v1/analytics/mtbf-mttr` | 可靠性统计 |
+| GET | `/api/v1/analytics/energy` | 能耗分析 |
+| GET | `/api/v1/analytics/device-comparison` | 设备对比 |
 
-## Seed Data
+## 初始数据
 
-On first startup, the backend automatically seeds the database with:
+首次启动时，后端自动初始化以下数据：
 
-- **16 devices** across 3 workshops (CNC machines, presses, conveyors, ovens, robotic arms)
-- **11,520 telemetry records** (30 days of hourly data per device)
-- **25 alerts** with mixed severity levels
-- **12+ maintenance records** (completed and scheduled)
-- **3 users** with different roles
+- **16台设备** - 分布在3个车间（CNC机床、冲压机、传送带、烘箱、机械臂）
+- **11520条遥测记录** - 30天每小时数据
+- **25条告警** - 混合严重级别
+- **12+条维护记录** - 已完成和已计划
+- **3个用户** - 不同角色
 
-## License
+## 许可证
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - 详见 [LICENSE](LICENSE) 文件。
+
