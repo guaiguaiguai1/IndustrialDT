@@ -5,7 +5,9 @@ from typing import Optional
 from datetime import datetime
 
 from app.core.database import get_db
+from app.core.security import get_current_user
 from app.models.device import Device
+from app.models.user import User
 
 router = APIRouter(prefix="/devices", tags=["Devices"])
 
@@ -86,7 +88,11 @@ async def get_device(device_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=DeviceResponse)
-async def create_device(device_data: DeviceCreate, db: Session = Depends(get_db)):
+async def create_device(
+    device_data: DeviceCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     device = Device(**device_data.model_dump())
     db.add(device)
     db.commit()
@@ -96,7 +102,10 @@ async def create_device(device_data: DeviceCreate, db: Session = Depends(get_db)
 
 @router.put("/{device_id}", response_model=DeviceResponse)
 async def update_device(
-    device_id: int, device_data: DeviceCreate, db: Session = Depends(get_db)
+    device_id: int,
+    device_data: DeviceCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
@@ -109,7 +118,11 @@ async def update_device(
 
 
 @router.delete("/{device_id}")
-async def delete_device(device_id: int, db: Session = Depends(get_db)):
+async def delete_device(
+    device_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     device = db.query(Device).filter(Device.id == device_id).first()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
