@@ -9,6 +9,8 @@ from pydantic import BaseModel
 from app.core.database import get_db
 from app.models.alert import Alert
 from app.models.device import Device
+from app.models.user import User
+from app.api.v1.auth import get_current_user
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"])
 
@@ -34,6 +36,7 @@ async def list_alerts(
     device_id: Optional[int] = Query(None),
     resolved: Optional[bool] = Query(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     query = db.query(Alert).options(joinedload(Alert.device))
     if severity:
@@ -62,7 +65,10 @@ async def list_alerts(
 
 
 @router.get("/stats")
-async def alert_stats(db: Session = Depends(get_db)):
+async def alert_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     total = db.query(Alert).count()
     unresolved = db.query(Alert).filter(Alert.resolved == False).count()
     critical = db.query(Alert).filter(Alert.severity == "critical", Alert.resolved == False).count()
@@ -79,7 +85,10 @@ async def alert_stats(db: Session = Depends(get_db)):
 
 
 @router.get("/trend")
-async def alert_trend(db: Session = Depends(get_db)):
+async def alert_trend(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Alert count per day for the last 7 days."""
     from datetime import timedelta
 
@@ -98,7 +107,11 @@ async def alert_trend(db: Session = Depends(get_db)):
 
 
 @router.put("/{alert_id}/resolve")
-async def resolve_alert(alert_id: int, db: Session = Depends(get_db)):
+async def resolve_alert(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     alert = db.query(Alert).filter(Alert.id == alert_id).first()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")

@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -9,6 +9,8 @@ from pydantic import BaseModel
 from app.core.database import get_db
 from app.models.telemetry import TelemetryData
 from app.models.device import Device
+from app.models.user import User
+from app.api.v1.auth import get_current_user
 
 router = APIRouter(prefix="/telemetry", tags=["Telemetry"])
 
@@ -33,6 +35,7 @@ async def get_device_telemetry(
     device_id: int,
     hours: int = Query(24, description="Number of hours of data"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     return (
@@ -44,7 +47,11 @@ async def get_device_telemetry(
 
 
 @router.get("/{device_id}/latest")
-async def get_latest_telemetry(device_id: int, db: Session = Depends(get_db)):
+async def get_latest_telemetry(
+    device_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     data = (
         db.query(TelemetryData)
         .filter(TelemetryData.device_id == device_id)
@@ -64,7 +71,10 @@ async def get_latest_telemetry(device_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/simulate")
-async def simulate_telemetry(db: Session = Depends(get_db)):
+async def simulate_telemetry(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Generate simulated real-time telemetry for all devices."""
     devices = db.query(Device).all()
     now = datetime.now(timezone.utc)
@@ -99,7 +109,10 @@ async def simulate_telemetry(db: Session = Depends(get_db)):
 
 
 @router.get("/realtime/all")
-async def get_realtime_all(db: Session = Depends(get_db)):
+async def get_realtime_all(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Get latest telemetry for all devices (for 3D view)."""
     devices = db.query(Device).all()
     result = []

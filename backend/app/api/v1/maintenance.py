@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -8,6 +8,8 @@ from pydantic import BaseModel
 from app.core.database import get_db
 from app.models.maintenance import MaintenanceRecord
 from app.models.device import Device
+from app.models.user import User
+from app.api.v1.auth import get_current_user
 
 router = APIRouter(prefix="/maintenance", tags=["Maintenance"])
 
@@ -22,7 +24,7 @@ class MaintenanceResponse(BaseModel):
     end_time: datetime | None
     status: str
     technician: str | None
-    cost: int | None
+    cost: float | None
     notes: str | None
     created_at: datetime | None
 
@@ -38,7 +40,7 @@ class MaintenanceCreate(BaseModel):
     end_time: datetime | None = None
     status: str = "scheduled"
     technician: str | None = None
-    cost: int | None = None
+    cost: float | None = None
     notes: str | None = None
 
 
@@ -47,6 +49,7 @@ async def list_maintenance(
     device_id: Optional[int] = Query(None),
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     query = db.query(MaintenanceRecord)
     if device_id:
@@ -69,7 +72,7 @@ async def list_maintenance(
                 end_time=record.end_time,
                 status=record.status,
                 technician=record.technician,
-                cost=record.cost,
+                cost=float(record.cost) if record.cost else None,
                 notes=record.notes,
                 created_at=record.created_at,
             )
@@ -78,7 +81,10 @@ async def list_maintenance(
 
 
 @router.get("/calendar")
-async def maintenance_calendar(db: Session = Depends(get_db)):
+async def maintenance_calendar(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Get maintenance events formatted for calendar display."""
     records = db.query(MaintenanceRecord).all()
     events = []
@@ -97,7 +103,11 @@ async def maintenance_calendar(db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=MaintenanceResponse)
-async def create_maintenance(data: MaintenanceCreate, db: Session = Depends(get_db)):
+async def create_maintenance(
+    data: MaintenanceCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     record = MaintenanceRecord(**data.model_dump())
     db.add(record)
     db.commit()
@@ -113,7 +123,7 @@ async def create_maintenance(data: MaintenanceCreate, db: Session = Depends(get_
         end_time=record.end_time,
         status=record.status,
         technician=record.technician,
-        cost=record.cost,
+        cost=float(record.cost) if record.cost else None,
         notes=record.notes,
         created_at=record.created_at,
     )
@@ -121,7 +131,10 @@ async def create_maintenance(data: MaintenanceCreate, db: Session = Depends(get_
 
 @router.put("/{record_id}")
 async def update_maintenance_status(
-    record_id: int, status: str = Query(...), db: Session = Depends(get_db)
+    record_id: int,
+    status: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     record = db.query(MaintenanceRecord).filter(MaintenanceRecord.id == record_id).first()
     if not record:
