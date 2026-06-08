@@ -196,7 +196,9 @@ IndustrialDT/
 │   │   │   ├── Maintenance/
 │   │   │   ├── Analytics/
 │   │   │   └── Login/
-│   │   ├── components/
+│   │   ├── components/       # 公共组件
+│   │   │   ├── StatusTag.tsx
+│   │   │   └── ErrorBoundary.tsx
 │   │   ├── services/
 │   │   ├── stores/
 │   │   ├── types/
@@ -233,6 +235,7 @@ IndustrialDT/
 | GET | `/api/v1/analytics/mtbf-mttr` | 可靠性统计 |
 | GET | `/api/v1/analytics/energy` | 能耗分析 |
 | GET | `/api/v1/analytics/device-comparison` | 设备对比 |
+| WS | `/api/v1/ws/telemetry?token=<jwt>` | 实时遥测WebSocket推送 |
 
 ## 初始数据
 

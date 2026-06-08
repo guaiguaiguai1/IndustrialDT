@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api.v1 import auth, devices, telemetry, alerts, maintenance, dashboard, analytics
+from app.api.v1 import auth, devices, telemetry, alerts, maintenance, dashboard, analytics, websocket
 from app.seed.seed import seed_database
 
 
@@ -40,6 +40,7 @@ app.include_router(alerts.router, prefix="/api/v1")
 app.include_router(maintenance.router, prefix="/api/v1")
 app.include_router(dashboard.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
+app.include_router(websocket.router, prefix="/api/v1")
 
 
 @app.get("/")

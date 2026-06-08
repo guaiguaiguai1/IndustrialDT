@@ -1,7 +1,9 @@
+from enum import Enum
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
 from datetime import datetime
 
 from app.core.database import get_db
@@ -29,11 +31,11 @@ class DeviceResponse(BaseModel):
 
 
 class DeviceCreate(BaseModel):
-    name: str
-    type: str
+    name: str = Field(..., min_length=1, max_length=100)
+    type: Literal["CNC Machine", "Hydraulic Press", "Conveyor", "Industrial Oven", "Robotic Arm"]
     model: str | None = None
-    location: str
-    status: str = "online"
+    location: str = Field(..., min_length=1, max_length=100)
+    status: Literal["online", "warning", "fault", "offline"] = "online"
 
 
 @router.get("/", response_model=list[DeviceResponse])

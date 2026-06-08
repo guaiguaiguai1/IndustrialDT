@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 
 from app.core.database import get_db
@@ -51,7 +51,7 @@ async def list_maintenance(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    query = db.query(MaintenanceRecord)
+    query = db.query(MaintenanceRecord).options(joinedload(MaintenanceRecord.device))
     if device_id:
         query = query.filter(MaintenanceRecord.device_id == device_id)
     if status:
@@ -60,12 +60,11 @@ async def list_maintenance(
 
     result = []
     for record in records:
-        device = db.query(Device).filter(Device.id == record.device_id).first()
         result.append(
             MaintenanceResponse(
                 id=record.id,
                 device_id=record.device_id,
-                device_name=device.name if device else None,
+                device_name=record.device.name if record.device else None,
                 type=record.type,
                 description=record.description,
                 start_time=record.start_time,
@@ -86,18 +85,17 @@ async def maintenance_calendar(
     current_user: User = Depends(get_current_user),
 ):
     """Get maintenance events formatted for calendar display."""
-    records = db.query(MaintenanceRecord).all()
+    records = db.query(MaintenanceRecord).options(joinedload(MaintenanceRecord.device)).all()
     events = []
     for r in records:
-        device = db.query(Device).filter(Device.id == r.device_id).first()
         events.append({
             "id": r.id,
-            "title": f"{r.type.title()} - {device.name if device else 'Unknown'}",
+            "title": f"{r.type.title()} - {r.device.name if r.device else 'Unknown'}",
             "start": r.start_time.isoformat(),
             "end": r.end_time.isoformat() if r.end_time else r.start_time.isoformat(),
             "status": r.status,
             "type": r.type,
-            "device_name": device.name if device else None,
+            "device_name": r.device.name if r.device else None,
         })
     return events
 
@@ -112,11 +110,12 @@ async def create_maintenance(
     db.add(record)
     db.commit()
     db.refresh(record)
-    device = db.query(Device).filter(Device.id == record.device_id).first()
+    # Load with device relationship
+    record = db.query(MaintenanceRecord).options(joinedload(MaintenanceRecord.device)).filter(MaintenanceRecord.id == record.id).first()
     return MaintenanceResponse(
         id=record.id,
         device_id=record.device_id,
-        device_name=device.name if device else None,
+        device_name=record.device.name if record.device else None,
         type=record.type,
         description=record.description,
         start_time=record.start_time,

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -44,16 +44,34 @@ async def dashboard_overview(db: Session = Depends(get_db)):
 
 @router.get("/oee")
 async def oee_stats(db: Session = Depends(get_db)):
-    """Overall Equipment Effectiveness statistics."""
-    import random
-
-    # Simulated OEE based on device data
+    """Overall Equipment Effectiveness statistics based on real telemetry data."""
     devices = db.query(Device).all()
-    online_count = sum(1 for d in devices if d.status in ("online", "warning"))
+    total_devices = len(devices)
+    if total_devices == 0:
+        return {"oee": 0, "availability": 0, "performance": 0, "quality": 0}
 
-    availability = round(85 + (online_count / max(len(devices), 1)) * 14, 1)
-    performance = round(80 + random.uniform(0, 15), 1)
-    quality = round(92 + random.uniform(0, 7), 1)
+    # Availability: ratio of online/warning devices
+    online_count = sum(1 for d in devices if d.status in ("online", "warning"))
+    availability = round((online_count / total_devices) * 100, 1)
+
+    # Performance: based on avg RPM vs nominal RPM (assuming nominal 2000)
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+    avg_rpm = (
+        db.query(sqlfunc.avg(TelemetryData.rpm))
+        .filter(TelemetryData.timestamp >= cutoff)
+        .scalar()
+    ) or 0
+    performance = round(min((avg_rpm / 2000) * 100, 100), 1)
+
+    # Quality: inverse relationship with vibration (lower vibration = higher quality)
+    avg_vibration = (
+        db.query(sqlfunc.avg(TelemetryData.vibration))
+        .filter(TelemetryData.timestamp >= cutoff)
+        .scalar()
+    ) or 5.0
+    # Vibration range 0-15 mm/s, quality degrades above 5
+    quality = round(max(100 - (avg_vibration * 3), 50), 1)
+
     oee = round(availability * performance * quality / 10000, 1)
 
     return {
@@ -88,16 +106,37 @@ async def oee_trend():
 
 @router.get("/devices")
 async def device_list_dashboard(db: Session = Depends(get_db)):
-    """Device list with latest telemetry for dashboard."""
-    devices = db.query(Device).all()
-    result = []
-    for d in devices:
-        latest = (
-            db.query(TelemetryData)
-            .filter(TelemetryData.device_id == d.id)
-            .order_by(TelemetryData.timestamp.desc())
-            .first()
+    """Device list with latest telemetry for dashboard (optimized, no N+1)."""
+    from sqlalchemy.orm import aliased
+
+    # Subquery: latest timestamp per device
+    latest_subq = (
+        db.query(
+            TelemetryData.device_id,
+            sqlfunc.max(TelemetryData.timestamp).label("max_ts"),
         )
+        .group_by(TelemetryData.device_id)
+        .subquery()
+    )
+
+    # Join devices with their latest telemetry in a single query
+    rows = (
+        db.query(Device, TelemetryData)
+        .outerjoin(
+            latest_subq,
+            Device.id == latest_subq.c.device_id,
+        )
+        .outerjoin(
+            TelemetryData,
+            (TelemetryData.device_id == latest_subq.c.device_id)
+            & (TelemetryData.timestamp == latest_subq.c.max_ts),
+        )
+        .order_by(Device.id)
+        .all()
+    )
+
+    result = []
+    for d, latest in rows:
         result.append({
             "id": d.id,
             "name": d.name,

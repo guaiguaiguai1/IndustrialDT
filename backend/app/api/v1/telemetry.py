@@ -4,6 +4,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func as sqlfunc
 from pydantic import BaseModel
 
 from app.core.database import get_db
@@ -113,16 +114,34 @@ async def get_realtime_all(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get latest telemetry for all devices (for 3D view)."""
-    devices = db.query(Device).all()
-    result = []
-    for device in devices:
-        data = (
-            db.query(TelemetryData)
-            .filter(TelemetryData.device_id == device.id)
-            .order_by(TelemetryData.timestamp.desc())
-            .first()
+    """Get latest telemetry for all devices (for 3D view, optimized, no N+1)."""
+    # Subquery: latest timestamp per device
+    latest_subq = (
+        db.query(
+            TelemetryData.device_id,
+            sqlfunc.max(TelemetryData.timestamp).label("max_ts"),
         )
+        .group_by(TelemetryData.device_id)
+        .subquery()
+    )
+
+    rows = (
+        db.query(Device, TelemetryData)
+        .outerjoin(
+            latest_subq,
+            Device.id == latest_subq.c.device_id,
+        )
+        .outerjoin(
+            TelemetryData,
+            (TelemetryData.device_id == latest_subq.c.device_id)
+            & (TelemetryData.timestamp == latest_subq.c.max_ts),
+        )
+        .order_by(Device.id)
+        .all()
+    )
+
+    result = []
+    for device, data in rows:
         if data:
             result.append({
                 "device_id": device.id,
